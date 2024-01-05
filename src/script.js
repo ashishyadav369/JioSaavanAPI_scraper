@@ -39,7 +39,9 @@ async function getSongInfo(url) {
       url: encryptedMediaURL,
       bitrate: "320",
       api_version: "4",
+      ctx: "web6dot0",
       _format: "json",
+      _marker: 0,
     };
 
     // will parse params in url
@@ -56,36 +58,10 @@ async function getSongInfo(url) {
       .split("?")[0]
       .replace("ac.cf.saavncdn.com", "aac.saavncdn.com");
 
-    if (hasLyrics) {
-      const paramsLyrics = {
-        __call: "lyrics.getLyrics",
-        lyrics_id: key,
-        ctx: "web6dot0",
-        api_version: "4",
-        _format: "json",
-        _marker: "0",
-      };
-
-      const responseLyrics = await fetch(
-        `https://www.jiosaavn.com/api.php?${new URLSearchParams(paramsLyrics)}`,
-        { headers }
-      );
-      const responseLyricsJSON = await responseLyrics.json();
-
-      if (!responseLyricsJSON.lyrics) {
-        return { error: "Unexpected response structure from the lyrics API" };
-      }
-
-      responseJSONFinal.lyrics = responseLyricsJSON.lyrics;
-    }
-
     return responseJSONFinal;
   } catch (error) {
     return { error: error.message || "An error occurred" };
   }
 }
 
-const url = "Enter URL Here";
-getSongInfo(url)
-  .then((result) => console.log(result))
-  .catch((error) => console.error(error));
+exports.getSongInfo = getSongInfo;
