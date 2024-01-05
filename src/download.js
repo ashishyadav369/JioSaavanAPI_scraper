@@ -21,7 +21,7 @@ const downloadAndWrite = async (url, songName) => {
   });
 
   const writer = fs.createWriteStream(
-    path.resolve(__dirname, "downloads", `${songName}.mp3`)
+    path.resolve(process.cwd(), "downloads", `${songName}.mp3`)
   );
 
   data.on("data", (chunk) => progressBar.tick(chunk.length));

@@ -21,7 +21,6 @@
   "homepage": "https://github.com/ashishyadav369/jio_saavan_api_scr#readme",
   "dependencies": {
     "axios": "^1.6.4",
-    "progress": "^2.0.3",
-    "yargs": "^17.7.2"
+    "progress": "^2.0.3"
   }
 }
