@@ -17,16 +17,25 @@ async function getSongInfo(url) {
       `https://www.jiosaavn.com/api.php?${new URLSearchParams(params)}`,
       { headers }
     );
+
     const responseJSON = await response.json();
+
+    if (responseJSON.status === "failure") {
+      throw new Error(
+        "\nUnable to parse song url. Please recheck the song url\n"
+      );
+    }
 
     const key = Object.keys(responseJSON)[0];
     const songInfo = responseJSON[key];
 
     if (!songInfo.encrypted_media_url) {
-      return { error: "No encrypted_media_url found in the API response" };
+      throw new Error("\nNo encrypted_media_url found in the API response\n");
     }
 
     const encryptedMediaURL = songInfo.encrypted_media_url;
+
+    // TODO :: To download lyrics in text file
     const hasLyrics = songInfo.has_lyrics;
 
     const responseJSONFinal = {
@@ -60,7 +69,8 @@ async function getSongInfo(url) {
 
     return responseJSONFinal;
   } catch (error) {
-    return { error: error.message || "An error occurred" };
+    console.error(error.message || "An error occurred");
+    process.exit();
   }
 }
 
