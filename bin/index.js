@@ -1,5 +1,6 @@
 #! /usr/bin/env node
 const parseUrl = require("../src/script");
+const parseAlbum = require("../src/album");
 const audio = require("../src/download");
 const urlParser = require("url");
 
@@ -22,20 +23,47 @@ function handelArgument(option, url) {
     const { hostname, path } = urlParser.parse(url);
     let subPath = path.split("/")[1];
     if (hostname === "www.jiosaavn.com") {
-      if (subPath !== "song") {
+      let isValidSubPath =
+        subPath === "song" || subPath === "album" ? true : false;
+      if (!isValidSubPath) {
         console.log(
-          "\nPlease enter single song url. It seems you are trying to download album or playlist\n--help for usage details\n"
+          "\nAs of now only song or album can be downloded.\n--help for usage details\n"
         );
         process.exit();
       }
-      parseUrl
-        .getSongInfo(url)
-        .then((result) => {
-          (async () => {
-            await audio.downloadAndWrite(result.web_cdn, result.song);
-          })();
-        })
-        .catch((error) => console.error(error));
+      if (subPath === "song") {
+        parseUrl
+          .getSongInfo(url, {})
+          .then((result) => {
+            (async () => {
+              await audio.downloadAndWrite(
+                result.web_cdn,
+                result.song,
+                result.album
+              );
+            })();
+          })
+          .catch((error) => console.error(error));
+      }
+      if (subPath === "album") {
+        (async () => {
+          let playlistTracks = await parseAlbum.getAlbumInfo(url);
+          for (const track of playlistTracks) {
+            try {
+              const result = await parseUrl.getSongInfo("", track);
+
+              // Download and write the file synchronously
+              await audio.downloadAndWrite(
+                result.web_cdn,
+                result.song,
+                result.album
+              );
+            } catch (error) {
+              console.error(error);
+            }
+          }
+        })();
+      }
     } else {
       console.log(
         "\nPlease enter valid JioSaavan song link\n--help for usage details\n"

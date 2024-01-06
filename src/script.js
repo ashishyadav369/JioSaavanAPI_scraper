@@ -1,38 +1,40 @@
-async function getSongInfo(url) {
+async function getSongInfo(url, trackObj) {
   try {
-    if (!url) {
-      return { error: "URL is not provided" };
-    }
-
-    const songID = url.split("song")[1].split("/")[2];
-
+    let songInfo = trackObj;
     const headers = { Host: "www.jiosaavn.com" };
-    const params = {
-      __call: "webapi.get",
-      token: songID,
-      type: "song",
-    };
+    if (!songInfo.hasOwnProperty("encrypted_media_url")) {
+      if (!url) {
+        return { error: "URL is not provided" };
+      }
 
-    const response = await fetch(
-      `https://www.jiosaavn.com/api.php?${new URLSearchParams(params)}`,
-      { headers }
-    );
+      const songID = url.split("song")[1].split("/")[2];
 
-    const responseJSON = await response.json();
+      const params = {
+        __call: "webapi.get",
+        token: songID,
+        type: "song",
+      };
 
-    if (responseJSON.status === "failure") {
-      throw new Error(
-        "\nUnable to parse song url. Please recheck the song url\n"
+      const response = await fetch(
+        `https://www.jiosaavn.com/api.php?${new URLSearchParams(params)}`,
+        { headers }
       );
+
+      const responseJSON = await response.json();
+
+      if (responseJSON.status === "failure") {
+        throw new Error(
+          "\nUnable to parse song url. Please recheck the song url\n"
+        );
+      }
+
+      const key = Object.keys(responseJSON)[0];
+      songInfo = responseJSON[key];
+
+      if (!songInfo.encrypted_media_url) {
+        throw new Error("\nNo encrypted_media_url found in the API response\n");
+      }
     }
-
-    const key = Object.keys(responseJSON)[0];
-    const songInfo = responseJSON[key];
-
-    if (!songInfo.encrypted_media_url) {
-      throw new Error("\nNo encrypted_media_url found in the API response\n");
-    }
-
     const encryptedMediaURL = songInfo.encrypted_media_url;
 
     // TODO :: To download lyrics in text file
